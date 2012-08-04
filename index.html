@@ -314,13 +314,12 @@ console.log(test);
 
 var fs = {oauth: null};
 
-window.open('https://foursquare.com/oauth2/authenticate?client_id=TZGGYQQPLXGWT2DZA5UQU3XRDZPZVSRAMOB5E3P0IN31YRV0&response_type=token&redirect_uri=http://localhost:85/usmap', "", "width=400,height=50");
+window.open('https://foursquare.com/oauth2/authenticate?client_id=TZGGYQQPLXGWT2DZA5UQU3XRDZPZVSRAMOB5E3P0IN31YRV0&response_type=token&redirect_uri=http://localhost:85/usmap/fstoken.html', "", "width=400,height=50");
 
-$(fs).on('login', function(){
-	console.log(this);
+$(window).on('login', function(e, d){
+	alert('logged in');
+	console.log(d);
 });
-
-$(fs).trigger('login');
 
 var Place = function(lat, lng, state, name, date){
 	this.lat = lat;
