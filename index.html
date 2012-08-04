@@ -3,7 +3,7 @@
 <title>SVG</title>
 <meta charset="utf-8" />
 <style>
-	.white-state {fill: #0000ff;stroke:#000040;}
+	.white-state {fill: #535353;stroke:#000040;}
 	svg {fill: #d3d3d3;fill-opacity:1;stroke:#ffffff;stroke-opacity:1;stroke-width:0.75;stroke-miterlimit:4;stroke-dasharray:none;}
 </style>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
@@ -316,9 +316,125 @@ var fs = {oauth: null};
 
 window.open('https://foursquare.com/oauth2/authenticate?client_id=TZGGYQQPLXGWT2DZA5UQU3XRDZPZVSRAMOB5E3P0IN31YRV0&response_type=token&redirect_uri=http://localhost:85/usmap/fstoken.html', "", "width=400,height=50");
 
+var abbr = {
+	ALASKA: 		'AK',
+	ALABAMA: 		'AL',
+	ARKANSAS: 		'AR',
+	ARIZONA: 		'AZ',
+	CALIFORNIA: 	'CA',
+	COLORADO:		'CO',
+	CONNECTICUT:	'CT',
+	DELAWARE:		'DE',
+	FLORIDA:		'FL',
+	GEORGIA:		'GA',
+	HAWAII:			'HI',
+	IOWA:			'IA',
+	IDAHO:			'ID',
+	ILLINOIS:		'IL',
+	INDIANA: 		'IN',
+	KANSAS:			'KS',
+	KENTUCKY:		'KY',
+	LOUISIANA:		'LA',
+	MASSACHUSETTS:	'MA',
+	MISSOURI: 		'MO',
+	OKLAHOMA: 		'OK',
+	TEXAS: 			'TX',
+};
+
 $(window).on('login', function(e, d){
-	alert('logged in');
 	console.log(d);
+	fs.oauth = d;
+	$.getJSON('https://api.foursquare.com/v2/users/self/checkins?limit=100&oauth_token=' + fs.oauth, function(data){
+		var checks = data.response.checkins.items;
+		for(var i in checks){
+			Model.addCheckin(new Place( 
+				checks[i].venue.location.lat,
+				checks[i].venue.location.lng,
+				checks[i].venue.location.state,
+				checks[i].venue.name,
+				checks[i].createdAt
+			));
+		}
+		for(var s in Model.states){
+				$('#' + Model.states[s].name).attr('class', 'white-state');
+			}
+	});
+	$.getJSON('https://api.foursquare.com/v2/users/self/checkins?limit=100&offset=100&oauth_token=' + fs.oauth, function(data){
+		var checks = data.response.checkins.items;
+		for(var i in checks){
+			Model.addCheckin(new Place( 
+				checks[i].venue.location.lat,
+				checks[i].venue.location.lng,
+				checks[i].venue.location.state,
+				checks[i].venue.name,
+				checks[i].createdAt
+			));
+		}
+		for(var s in Model.states){
+				$('#' + Model.states[s].name).attr('class', 'white-state');
+			}
+	});
+	$.getJSON('https://api.foursquare.com/v2/users/self/checkins?limit=100&offset=200&oauth_token=' + fs.oauth, function(data){
+		var checks = data.response.checkins.items;
+		for(var i in checks){
+			Model.addCheckin(new Place( 
+				checks[i].venue.location.lat,
+				checks[i].venue.location.lng,
+				checks[i].venue.location.state,
+				checks[i].venue.name,
+				checks[i].createdAt
+			));
+		}
+		for(var s in Model.states){
+				$('#' + Model.states[s].name).attr('class', 'white-state');
+			}
+	});
+	$.getJSON('https://api.foursquare.com/v2/users/self/checkins?limit=100&offset=300&oauth_token=' + fs.oauth, function(data){
+		var checks = data.response.checkins.items;
+		for(var i in checks){
+			Model.addCheckin(new Place( 
+				checks[i].venue.location.lat,
+				checks[i].venue.location.lng,
+				checks[i].venue.location.state,
+				checks[i].venue.name,
+				checks[i].createdAt
+			));
+		}
+		for(var s in Model.states){
+				$('#' + Model.states[s].name).attr('class', 'white-state');
+			}
+	});
+	$.getJSON('https://api.foursquare.com/v2/users/self/checkins?limit=100&offset=400&oauth_token=' + fs.oauth, function(data){
+		var checks = data.response.checkins.items;
+		for(var i in checks){
+			Model.addCheckin(new Place( 
+				checks[i].venue.location.lat,
+				checks[i].venue.location.lng,
+				checks[i].venue.location.state,
+				checks[i].venue.name,
+				checks[i].createdAt
+			));
+		}
+		for(var s in Model.states){
+				$('#' + Model.states[s].name).attr('class', 'white-state');
+			}
+	});
+	$.getJSON('https://api.foursquare.com/v2/users/self/checkins?limit=100&offset=500&oauth_token=' + fs.oauth, function(data){
+		var checks = data.response.checkins.items;
+		for(var i in checks){
+			Model.addCheckin(new Place( 
+				checks[i].venue.location.lat,
+				checks[i].venue.location.lng,
+				checks[i].venue.location.state,
+				checks[i].venue.name,
+				checks[i].createdAt
+			));
+		}
+		for(var s in Model.states){
+				$('#' + Model.states[s].name).attr('class', 'white-state');
+			}
+	console.log(Model.stateCount());
+	});
 });
 
 var Place = function(lat, lng, state, name, date){
@@ -339,15 +455,35 @@ State.prototype.addCheckin = function(checkin){
 	this.checkins.push(checkin);
 }
 
-var Model = {states: {}};
+var Model = {states: {}, checkins: [], stateArray: []};
 
 Model.addCheckin = function(place){
-	if(this.states[place.state] === undefined){
-		this.states[place.state] = new State(place.state);
+	var state;
+	if(place.state !== undefined){
+		if(place.state.length > 2){
+			//Need to look up the abbreviation
+			state = abbr[place.state.toUpperCase()];
+		}else{
+			state = place.state.toUpperCase();
+		}
+		if(this.states[state] === undefined){
+			this.states[state] = new State(state);
+		}
+		
+		this.states[state].addCheckin(place);
+		this.checkins.push(place);
 	}
-	
-	this.states[place.state].addCheckin(place);
-}
+};
+
+Model.stateCount = function(){
+	for(var i in this.states){
+		if(this.states[i] !== undefined){
+			this.stateArray.push([this.states[i].name, this.states[i].checkins.length]);
+			this.stateArray.sort(function(a, b){return b[1] - a[1]});
+		}
+	}
+	return this.stateArray;
+};
 
 var states = [];
 var byState = [];
@@ -384,7 +520,6 @@ FB.getLoginStatus(function(response){
 					c.data[i].created_time
 				));
 			}
-			console.log(states);
 			console.log(Model);
 			for(var s in Model.states){
 				$('#' + Model.states[s].name).attr('class', 'white-state');
