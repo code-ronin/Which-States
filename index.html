@@ -3,7 +3,7 @@
 <title>SVG</title>
 <meta charset="utf-8" />
 <style>
-	.white-state {fill: #535353;stroke:#000040;}
+	.white-state {fill: #535353;stroke:#ffffff;}
 	svg {fill: #d3d3d3;fill-opacity:1;stroke:#ffffff;stroke-opacity:1;stroke-width:0.75;stroke-miterlimit:4;stroke-dasharray:none;}
 </style>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
@@ -11,6 +11,7 @@
 </head>
 <body>
 <h2>HTML5 SVG Polygon</h2>
+<ul id-"years"></ul>
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
@@ -341,108 +342,66 @@ var abbr = {
 	TEXAS: 			'TX',
 };
 
+function getFourSquare(fs, offset, count, callback){
+	if(fs.oauth === undefined){
+		//error
+		return;
+	}
+	offset = (offset === undefined) ? 0 : offset;
+	count = (count === undefined) ? 1 : count;
+
+	$.getJSON('https://api.foursquare.com/v2/users/self/checkins?v=20120806&limit=250&offset=' + offset + '&oauth_token=' + fs.oauth, function(data){
+		console.log(data);
+		console.log(count);
+		console.log(offset);
+		var checks = data.response.checkins.items;
+		count = data.response.checkins.count;
+		for(var i in checks){
+			if(checks[i].venue !== undefined){
+				var date = new Date(checks[i].createdAt * 1000);
+				Model.addCheckin(new Place( 
+					checks[i].venue.location.lat,
+					checks[i].venue.location.lng,
+					checks[i].venue.location.state,
+					checks[i].venue.name,
+					date,
+					date.getFullYear()
+				));
+			}
+		}
+		
+		if(count > offset + 250){
+		getFourSquare(fs, offset + 250, count, callback);
+		}else{
+			for(var s in Model.states){
+				$('#' + Model.states[s].name).attr('class', 'white-state');
+			}
+			callback();
+		}
+	});
+	
+};
+
 $(window).on('login', function(e, d){
 	console.log(d);
 	fs.oauth = d;
-	$.getJSON('https://api.foursquare.com/v2/users/self/checkins?limit=100&oauth_token=' + fs.oauth, function(data){
-		var checks = data.response.checkins.items;
-		for(var i in checks){
-			Model.addCheckin(new Place( 
-				checks[i].venue.location.lat,
-				checks[i].venue.location.lng,
-				checks[i].venue.location.state,
-				checks[i].venue.name,
-				checks[i].createdAt
-			));
-		}
-		for(var s in Model.states){
-				$('#' + Model.states[s].name).attr('class', 'white-state');
-			}
+	var fsCount;
+	getFourSquare(fs, 0, 1, function(){
+		alert('done');
 	});
-	$.getJSON('https://api.foursquare.com/v2/users/self/checkins?limit=100&offset=100&oauth_token=' + fs.oauth, function(data){
-		var checks = data.response.checkins.items;
-		for(var i in checks){
-			Model.addCheckin(new Place( 
-				checks[i].venue.location.lat,
-				checks[i].venue.location.lng,
-				checks[i].venue.location.state,
-				checks[i].venue.name,
-				checks[i].createdAt
-			));
-		}
-		for(var s in Model.states){
-				$('#' + Model.states[s].name).attr('class', 'white-state');
-			}
-	});
-	$.getJSON('https://api.foursquare.com/v2/users/self/checkins?limit=100&offset=200&oauth_token=' + fs.oauth, function(data){
-		var checks = data.response.checkins.items;
-		for(var i in checks){
-			Model.addCheckin(new Place( 
-				checks[i].venue.location.lat,
-				checks[i].venue.location.lng,
-				checks[i].venue.location.state,
-				checks[i].venue.name,
-				checks[i].createdAt
-			));
-		}
-		for(var s in Model.states){
-				$('#' + Model.states[s].name).attr('class', 'white-state');
-			}
-	});
-	$.getJSON('https://api.foursquare.com/v2/users/self/checkins?limit=100&offset=300&oauth_token=' + fs.oauth, function(data){
-		var checks = data.response.checkins.items;
-		for(var i in checks){
-			Model.addCheckin(new Place( 
-				checks[i].venue.location.lat,
-				checks[i].venue.location.lng,
-				checks[i].venue.location.state,
-				checks[i].venue.name,
-				checks[i].createdAt
-			));
-		}
-		for(var s in Model.states){
-				$('#' + Model.states[s].name).attr('class', 'white-state');
-			}
-	});
-	$.getJSON('https://api.foursquare.com/v2/users/self/checkins?limit=100&offset=400&oauth_token=' + fs.oauth, function(data){
-		var checks = data.response.checkins.items;
-		for(var i in checks){
-			Model.addCheckin(new Place( 
-				checks[i].venue.location.lat,
-				checks[i].venue.location.lng,
-				checks[i].venue.location.state,
-				checks[i].venue.name,
-				checks[i].createdAt
-			));
-		}
-		for(var s in Model.states){
-				$('#' + Model.states[s].name).attr('class', 'white-state');
-			}
-	});
-	$.getJSON('https://api.foursquare.com/v2/users/self/checkins?limit=100&offset=500&oauth_token=' + fs.oauth, function(data){
-		var checks = data.response.checkins.items;
-		for(var i in checks){
-			Model.addCheckin(new Place( 
-				checks[i].venue.location.lat,
-				checks[i].venue.location.lng,
-				checks[i].venue.location.state,
-				checks[i].venue.name,
-				checks[i].createdAt
-			));
-		}
-		for(var s in Model.states){
-				$('#' + Model.states[s].name).attr('class', 'white-state');
-			}
-	console.log(Model.stateCount());
-	});
+	
+	for(var s in Model.states){
+		$('#' + Model.states[s].name).attr('class', 'white-state');
+	}
 });
 
-var Place = function(lat, lng, state, name, date){
+var Place = function(lat, lng, state, name, date, year){
 	this.lat = lat;
 	this.lng = lng;
 	this.state = state;
 	this.name = name;
 	this.date = date;
+	this.year = year;
 };
 
 
@@ -455,7 +414,7 @@ State.prototype.addCheckin = function(checkin){
 	this.checkins.push(checkin);
 }
 
-var Model = {states: {}, checkins: [], stateArray: []};
+var Model = {states: {}, checkins: [], years: {}};
 
 Model.addCheckin = function(place){
 	var state;
@@ -466,23 +425,56 @@ Model.addCheckin = function(place){
 		}else{
 			state = place.state.toUpperCase();
 		}
+		this.states[state] = (this.states[state] === undefined) ? new State(state) : this.states[state];
+		this.years[place.year] = (this.years[place.year] !== undefined) ? this.years[place.year] : {};
+		this.years[place.year][state] = (this.years[place.year][state] !== undefined) ? this.years[place.year][state] : new State(state);
+		
+		/*
 		if(this.states[state] === undefined){
 			this.states[state] = new State(state);
-		}
+		}*/
 		
 		this.states[state].addCheckin(place);
-		this.checkins.push(place);
+		this.years[place.year][state].addCheckin(place);
 	}
 };
 
 Model.stateCount = function(){
+	var stateArray = [];
 	for(var i in this.states){
-		if(this.states[i] !== undefined){
-			this.stateArray.push([this.states[i].name, this.states[i].checkins.length]);
-			this.stateArray.sort(function(a, b){return b[1] - a[1]});
+		if(this.states[i].name !== undefined){
+			stateArray.push([this.states[i].name, this.states[i].checkins.length]);
+			stateArray.sort(function(a, b){return b[1] - a[1]});
 		}
 	}
-	return this.stateArray;
+	return stateArray;
+};
+
+Model.yearCount = function(){
+	var year = {};
+	for(var i in this.states){
+		if(this.states[i].name !== undefined){
+			this.states[i].checkins.forEach(function(place){
+				year[place.year] = (year[place.year] !== undefined) ? year[place.year] : {};
+				year[place.year][place.state] = (year[place.year][place.state] !== undefined) ? year[place.year][place.state] : [];
+				year[place.year][place.state].push(place);
+				/*
+				if(year[place.year] !== undefined && year[place.year][place.state] !== undefined){
+					year[place.year][place.state].push(place);
+				}else{
+					if(year[place.year][place.state] !== undefined){
+						year[place.year][place.state].push(place);
+					}else{
+						year[place.year] = {};
+						year[place.year][place.state] = [];
+						year[place.year][place.state].push(place);
+					}
+				}*/
+			});
+			
+		}
+	}
+	return year;
 };
 
 var states = [];
@@ -498,26 +490,21 @@ var byState = [];
 
 FB.getLoginStatus(function(response){
     if(response.status === 'connected'){
-    	FB.api('me/checkins', function(c){
+    	FB.api('me/checkins?limit=750', function(c){
 			console.log(c);
 			for(var i in c.data){
 				//alert(c.data[i].place.location.state);
 				//$('#' + c.data[i].place.location.state).attr('class', 'white-state');
-				states.push(new Place( 
-					c.data[i].place.location.latitude,
-					c.data[i].place.location.longitude,
-					c.data[i].place.location.state,
-					c.data[i].place.name,
-					c.data[i].created_time
-				));
 				
 				//Model.addState(c.data[i].place.location.state);
+				var date = new Date(c.data[i].created_time);
 				Model.addCheckin(new Place( 
 					c.data[i].place.location.latitude,
 					c.data[i].place.location.longitude,
 					c.data[i].place.location.state,
 					c.data[i].place.name,
-					c.data[i].created_time
+					date,
+					date.getFullYear()
 				));
 			}
 			console.log(Model);
