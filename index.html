@@ -3,7 +3,8 @@
 <title>SVG</title>
 <meta charset="utf-8" />
 <style>
-	.white-state {fill: #535353;stroke:#ffffff;}
+	/*.white-state {fill: #535353;stroke:#ffffff;}*/
+	.white-state {fill: hsl(0, 0%, 33%); stroke:#ffffff;}
 	svg {fill: #d3d3d3;fill-opacity:1;stroke:#ffffff;stroke-opacity:1;stroke-width:0.75;stroke-miterlimit:4;stroke-dasharray:none;}
 </style>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
@@ -11,7 +12,7 @@
 </head>
 <body>
 <h2>HTML5 SVG Polygon</h2>
-<ul id-"years"></ul>
+<ul id="years"></ul>
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
@@ -20,8 +21,10 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="959"
-   height="593"
+	width=200
+	height=200
+	viewBox="0 0 959 593"
+	preserveAspectRatio="xMinYMin"
    id="svg2"
    sodipodi:version="0.32"
    inkscape:version="0.46"
@@ -373,8 +376,14 @@ function getFourSquare(fs, offset, count, callback){
 		if(count > offset + 250){
 		getFourSquare(fs, offset + 250, count, callback);
 		}else{
+			var l = 0;
 			for(var s in Model.states){
-				$('#' + Model.states[s].name).attr('class', 'white-state');
+				//$('#' + Model.states[s].name).attr('class', 'white-state');
+				if(Model.states[s] instanceof State){
+					l = (Model.states[s].checkins.length / Model.states.checkinCount)*40;
+					$('#' + Model.states[s].name).attr('fill', 'hsl(0, 0%, ' + (73 - l) + '%)');
+					console.log(73-l);
+				}
 			}
 			callback();
 		}
@@ -382,12 +391,24 @@ function getFourSquare(fs, offset, count, callback){
 	
 };
 
+$('#years').on('click', 'li', function(e){
+	console.log($(e.target).html());
+	$('svg path, svg g').removeAttr('class');
+	for(var s in Model.years[$(e.target).html()]){
+		$('#' + Model.states[s].name).attr('class', 'white-state');
+	}
+});
+
 $(window).on('login', function(e, d){
 	console.log(d);
 	fs.oauth = d;
 	var fsCount;
 	getFourSquare(fs, 0, 1, function(){
-		alert('done');
+		var yearsUL = $('#years');
+		for(year in Model.years){
+			yearsUL.append('<li class="yearli">' + year + '</li>');
+		}
+		
 	});
 	
 	for(var s in Model.states){
@@ -414,7 +435,9 @@ State.prototype.addCheckin = function(checkin){
 	this.checkins.push(checkin);
 }
 
-var Model = {states: {}, checkins: [], years: {}};
+var States = function(){};
+
+var Model = {states: {checkinCount: 0}, checkins: 0, years: {}, };
 
 Model.addCheckin = function(place){
 	var state;
@@ -435,6 +458,7 @@ Model.addCheckin = function(place){
 		}*/
 		
 		this.states[state].addCheckin(place);
+		this.states.checkinCount++;
 		this.years[place.year][state].addCheckin(place);
 	}
 };
@@ -508,8 +532,11 @@ FB.getLoginStatus(function(response){
 				));
 			}
 			console.log(Model);
+			var l = 0;
 			for(var s in Model.states){
-				$('#' + Model.states[s].name).attr('class', 'white-state');
+				//$('#' + Model.states[s].name).attr('class', 'white-state');
+				//$('#' + Model.states[s].name).attr('fill', 'hsl(0, 0%, ' + (33 + l) + '%)');
+				//l += 2.5;
 			}
 		});
     }else{
