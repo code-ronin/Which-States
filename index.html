@@ -331,6 +331,7 @@
 </div>
 </div>
 <div id="fb-root"></div>
+<script src="JoshNS.js"></script>
 <script>
 var test = document.getElementById('IN');
 var id = document.getElementById('ID');
@@ -474,53 +475,7 @@ var Place = function(lat, lng, state, name, date, year, type){
 	this.type = type;
 };
 
-
-var State = function(name){
-	this.name = name;
-	this.checkins = 1;
-};
-
-var Model = {states: {}, checkins: [], years: {}, modified: new Date().getTime(), fb: false, fs: false};
-
-Model.addCheckin = function(place){
-	this.checkins.push(place);
-	this.years[place.year] = (this.years[place.year] !== undefined) ? this.years[place.year] : {};
-	
-	if(this.states[place.state] === undefined){
-			this.states[place.state] = new State(place.state);
-			this.years[place.year][place.state] = new State(place.state);
-		}else{
-			this.states[place.state].checkins++;
-			if(this.years[place.year][place.state] === undefined){
-				this.years[place.year][place.state] = new State(place.state);
-			}else{
-				this.years[place.year][place.state].checkins++;
-			}
-		}
-	this.modified = new Date().getTime();
-	$(this).trigger('checkin', place);
-};
-
-Model.sortedStates = function(states){
-	var stateArray = [];
-	
-	for(var i in states){
-		if(states[i].name !== undefined){
-			stateArray.push(states[i]);
-			stateArray.sort(function(a, b){return b.checkins - a.checkins});
-		}
-	}
-	return stateArray;
-}
-Model.getAll = function(){
-	return this.sortedStates(this.states);
-}
-
-Model.getYear = function(year){
-	if(this.years[year] !== undefined){
-		return this.sortedStates(this.years[year]);
-	}
-}
+var Model = new Josh.US();
 
 $(Model).on('checkin', function(e,d){
 	var infoUL = $('#info');
