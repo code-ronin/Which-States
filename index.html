@@ -347,31 +347,6 @@ $('#fs_connect').on('click', function(){
 window.open('https://foursquare.com/oauth2/authenticate?client_id=TZGGYQQPLXGWT2DZA5UQU3XRDZPZVSRAMOB5E3P0IN31YRV0&response_type=token&redirect_uri=http://localhost:85/usmap/fstoken.html', "", "width=400,height=50");
 });
 
-var abbr = {
-	ALASKA: 		'AK',
-	ALABAMA: 		'AL',
-	ARKANSAS: 		'AR',
-	ARIZONA: 		'AZ',
-	CALIFORNIA: 	'CA',
-	COLORADO:		'CO',
-	CONNECTICUT:	'CT',
-	DELAWARE:		'DE',
-	FLORIDA:		'FL',
-	GEORGIA:		'GA',
-	HAWAII:			'HI',
-	IOWA:			'IA',
-	IDAHO:			'ID',
-	ILLINOIS:		'IL',
-	INDIANA: 		'IN',
-	KANSAS:			'KS',
-	KENTUCKY:		'KY',
-	LOUISIANA:		'LA',
-	MASSACHUSETTS:	'MA',
-	MISSOURI: 		'MO',
-	OKLAHOMA: 		'OK',
-	TEXAS: 			'TX',
-};
-
 function getFourSquare(fs, offset, count, callback){
 	if(fs.oauth === undefined){
 		//error
@@ -389,7 +364,7 @@ function getFourSquare(fs, offset, count, callback){
 		for(var i in checks){
 			if(checks[i].venue !== undefined){
 				var date = new Date(checks[i].createdAt * 1000);
-				Model.addCheckin(new Place( 
+				Model.addCheckin(new Josh.Place( 
 					checks[i].venue.location.lat,
 					checks[i].venue.location.lng,
 					checks[i].venue.location.state,
@@ -418,7 +393,7 @@ function getFourSquare(fs, offset, count, callback){
 			var max = all[0].checkins;
 			for(var i=0;i<all.length;i++){
 				//$('#' + all[i].name).attr('fill', 'hsl(0, 0%, ' + (73 + (all[i].checkins/max)) + '%)');
-				$('#' + all[i].name).attr('class', 'white-state');
+				$('svg').find('#' + all[i].name).attr('class', 'white-state');
 				console.log(73 * (all[i].checkins/max));
 			}
 			callback();
@@ -432,7 +407,7 @@ $('#years').on('click', 'li', function(e){
 	$('svg path, svg g').removeAttr('class');
 	var stateYear = Model.getYear($(e.target).html());
 	for(var i=0;i<stateYear.length;i++ ){
-		$('#' + stateYear[i].name).attr('class', 'white-state');
+		$('svg').find( '#' + stateYear[i].name).attr('class', 'white-state');
 	}
 });
 
@@ -457,23 +432,6 @@ $(window).on('login', function(e, d){
 		$('#' + Model.states[s].name).attr('class', 'white-state');
 	}
 });
-
-var Place = function(lat, lng, state, name, date, year, type){
-	this.lat = lat;
-	this.lng = lng;
-	//need to check for abbreviation
-	if(state !== undefined){
-		if(state.length > 2){
-			this.state = abbr[state.toUpperCase()];
-		}else{
-			this.state = state.toUpperCase();
-		}
-	}
-	this.name = name;
-	this.date = date;
-	this.year = year;
-	this.type = type;
-};
 
 var Model = new Josh.US();
 
@@ -504,7 +462,7 @@ FB.getLoginStatus(function(response){
 				
 				//Model.addState(c.data[i].place.location.state);
 				var date = new Date(c.data[i].created_time);
-				Model.addCheckin(new Place( 
+				Model.addCheckin(new Josh.Place( 
 					c.data[i].place.location.latitude,
 					c.data[i].place.location.longitude,
 					c.data[i].place.location.state,
