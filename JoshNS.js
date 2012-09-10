@@ -3,12 +3,13 @@
 	var states = {};
 	var checkins = [];
 	var years = {};
-	var fb = false;
+	//var fb = false;
 	var fs = false;
 	var $this;
 	
 	Josh.US = function(){
 		$this = $(this);
+		this.fb = false;
 	};
 	
 	Josh.US.prototype = {
@@ -50,12 +51,40 @@
 			if(years[year] !== undefined){
 				return this.sortedStates(years[year]);
 			}
+		},
+		
+		setFB: function(){
+			this.fb = true;
 		}
 	};
 	
 })(window.Josh = window.Josh || {}, window.jQuery);
 
 (function(Josh){})(window.Josh = window.Josh || {}, window.jQuery);
+
+(function(Josh){
+	//var USModel;
+	//var fb;
+	var This;
+	
+	Josh.AC = function(){
+		this.USModel = new Josh.US();
+		this.fb = new Josh.FB(this.USModel);
+		this.svg = new Josh.SVG();
+		
+		This = this;
+		
+		$(this.fb).on('checkinDone', function(){
+			//scope of the FB object
+			var all = This.USModel.getAll();
+			for(var i=0;i<all.length;i++){
+				This.svg.addState(all[i].name);
+			}
+		});
+		
+		this.fb.getCheckins();
+	};
+})(window.Josh = window.Josh || {}, window.jQuery);
 
 (function(Josh){
 	var $svg;
@@ -81,6 +110,55 @@
 		this.checkins = 1;
 	};
 })(window.Josh = window.Josh || {});
+
+(function(Josh){
+	var usModel;
+	var $this;
+	
+	Josh.FB = function(US){
+		//dependency injection
+		usModel = US;
+		$this = $(this);
+		
+		//init Facebook SDK
+		FB.init({
+			appId  : '389943044385763',
+			status : true, // check login status
+			cookie : true, // enable cookies to allow the server to access the session
+			oauth  : true, // enable OAuth 2.0
+			xfbml   : true
+		});
+	};
+	
+	Josh.FB.prototype = {
+		getCheckins: function(){
+			FB.getLoginStatus(function(response){
+			    if(response.status === 'connected'){
+			    	FB.api('me/checkins?limit=750', function(c){
+			    		usModel.setFB();
+						for(var i in c.data){
+							var date = new Date(c.data[i].created_time);
+							usModel.addCheckin(new Josh.Place( 
+								c.data[i].place.location.latitude,
+								c.data[i].place.location.longitude,
+								c.data[i].place.location.state,
+								c.data[i].place.name,
+								date,
+								date.getFullYear(),
+								'fb'
+							));
+						}
+						$this.trigger('checkinDone');
+					});
+			    }else{
+			    	FB.login(function(response){
+						console.log(response);
+			    	}, {scope: 'email,user_checkins,user_status'});
+			    }
+			});
+		}
+	};
+})(window.Josh = window.Josh || {}, window.jQuery);
 
 (function(Josh){
 	var abbr = {
