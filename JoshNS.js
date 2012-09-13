@@ -46,6 +46,15 @@
 		getAll: function(){
 			return this.sortedStates(states);
 		},
+		
+		getAllYears: function(){
+			var yarray = [];
+			for(var y in years){
+				yarray.push(y);
+			}
+			
+			return yarray;
+		},
 
 		getYear: function(year){
 			if(years[year] !== undefined){
@@ -63,26 +72,43 @@
 (function(Josh){})(window.Josh = window.Josh || {}, window.jQuery);
 
 (function(Josh){
-	//var USModel;
-	//var fb;
 	var This;
+	var $infoUL;
+	var $years;
 	
 	Josh.AC = function(){
+		//public properties
 		this.USModel = new Josh.US();
 		this.fb = new Josh.FB(this.USModel);
+		this.fs = new Josh.FS(this.USModel);
 		this.svg = new Josh.SVG();
 		
+		//private
 		This = this;
+		$infoUL = $('#info');
+		$years = $('#years');
 		
+		
+		//events to listen for
 		$(this.fb).on('checkinDone', function(){
-			//scope of the FB object
 			var all = This.USModel.getAll();
 			for(var i=0;i<all.length;i++){
 				This.svg.addState(all[i].name);
 			}
 		});
 		
-		this.fb.getCheckins();
+		$(this.fs).on('checkinDone', function(){
+			var all = This.USModel.getAll();
+			for(var i=0;i<all.length;i++){
+				This.svg.addState(all[i].name);
+			}
+		});
+		
+		$(this.USModel).on('checkin', function(e,d){
+			$infoUL.append('<li>Visted ' + d.name + ' in ' + d.state + ' on ' + d.date + '</li>');
+			//var years = This.USModel.get
+		});
+		
 	};
 })(window.Josh = window.Josh || {}, window.jQuery);
 
@@ -114,11 +140,13 @@
 (function(Josh){
 	var usModel;
 	var $this;
+	var This;
 	
 	Josh.FB = function(US){
 		//dependency injection
 		usModel = US;
 		$this = $(this);
+		This = this;
 		
 		//init Facebook SDK
 		FB.init({
@@ -127,6 +155,10 @@
 			cookie : true, // enable cookies to allow the server to access the session
 			oauth  : true, // enable OAuth 2.0
 			xfbml   : true
+		});
+		
+		$('#fb_connect').on('click', function(){
+			This.getCheckins();
 		});
 	};
 	
@@ -155,6 +187,69 @@
 						console.log(response);
 			    	}, {scope: 'email,user_checkins,user_status'});
 			    }
+			});
+		}
+	};
+})(window.Josh = window.Josh || {}, window.jQuery);
+
+(function(Josh){
+	var oauth;
+	var This;
+	var usModel;
+	
+	Josh.FS = function(US){
+		usModel = US;
+		
+		This = this;
+		
+		this.wireEvents();
+	};
+	
+	Josh.FS.prototype = {
+		wireEvents: function(){
+			//foursquare image
+			$('#fs_connect').on('click', function(){
+				window.open('https://foursquare.com/oauth2/authenticate?client_id=TZGGYQQPLXGWT2DZA5UQU3XRDZPZVSRAMOB5E3P0IN31YRV0&response_type=token&redirect_uri=http://localhost:85/usmap/fstoken.html', "", "width=400,height=50");
+			});
+			
+			//return from Oauth call
+			$(window).on('login', function(e, d){
+				oauth = d;
+				This.getFourSquare(0, 1);
+			});
+		},
+		
+		getFourSquare: function(offset, count){
+			if(oauth === undefined){
+				//error
+				return;
+			}
+			offset = (offset === undefined) ? 0 : offset;
+			count = (count === undefined) ? 1 : count;
+		
+			$.getJSON('https://api.foursquare.com/v2/users/self/checkins?v=20120806&limit=250&offset=' + offset + '&oauth_token=' + oauth, function(data){
+				var checks = data.response.checkins.items;
+				count = data.response.checkins.count;
+				for(var i in checks){
+					if(checks[i].venue !== undefined){
+						var date = new Date(checks[i].createdAt * 1000);
+						usModel.addCheckin(new Josh.Place( 
+							checks[i].venue.location.lat,
+							checks[i].venue.location.lng,
+							checks[i].venue.location.state,
+							checks[i].venue.name,
+							date,
+							date.getFullYear(),
+							'fs'
+						));
+					}
+				}
+				
+				if(count > offset + 250){
+					This.getFourSquare(offset + 250, count);
+				}else{
+					$(This).trigger('checkinDone');
+				}
 			});
 		}
 	};
