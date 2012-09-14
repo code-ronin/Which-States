@@ -20,6 +20,12 @@
 <div class="container">
 <h2>Which states have I been to?</h2>
 <div class="row">
+	<div class="span4">
+	<ul id="years"></ul>
+	<img src="img/fb_connect.gif" alt="Connect to Facebook" id="fb_connect" class="img-load">
+	<img src="img/connect-blue.png" alt="Connect to FourSquare" id="fs_connect" class="img-load">
+	</div>
+	
 	<div class="span12" style="height:600px;">
 
 <svg
@@ -316,12 +322,6 @@
 </svg>
 
 </div>
-	<div class="span4">
-	<ul id="years"></ul>
-	<img src="img/fb_connect.gif" alt="Connect to Facebook" id="fb_connect" class="img-load">
-	<img src="img/connect-blue.png" alt="Connect to FourSquare" id="fs_connect" class="img-load">
-	<button class="btn" id="save">Save</button>
-	</div>
 </div>
 
 <div class="row">
@@ -340,15 +340,6 @@ var id = document.getElementById('ID');
 //id.setAttribute('class', 'white-state');
 //test.setAttribute('opacity', '.5');
 console.log(test);
-
-$('#years').on('click', 'li', function(e){
-	console.log($(e.target).html());
-	$('svg path, svg g').removeAttr('class');
-	var stateYear = Model.getYear($(e.target).html());
-	for(var i=0;i<stateYear.length;i++ ){
-		$('svg').find( '#' + stateYear[i].name).attr('class', 'white-state');
-	}
-});
 
 $('#save').on('click', function(e){
 	window.open('test.html', "", "");

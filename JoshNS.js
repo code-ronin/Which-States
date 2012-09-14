@@ -37,9 +37,10 @@
 			for(var i in states){
 				if(states[i].name !== undefined){
 					stateArray.push(states[i]);
-					stateArray.sort(function(a, b){return b.checkins - a.checkins});
 				}
 			}
+			
+			stateArray.sort(function(a, b){return b.checkins - a.checkins});
 			return stateArray;
 		},
 		
@@ -91,31 +92,50 @@
 		
 		//events to listen for
 		$(this.fb).on('checkinDone', function(){
-			var all = This.USModel.getAll();
-			for(var i=0;i<all.length;i++){
-				This.svg.addState(all[i].name);
-			}
+			This.checkinDone();
 		});
 		
 		$(this.fs).on('checkinDone', function(){
-			var all = This.USModel.getAll();
-			for(var i=0;i<all.length;i++){
-				This.svg.addState(all[i].name);
-			}
+			This.checkinDone();
 		});
 		
 		$(this.USModel).on('checkin', function(e,d){
 			$infoUL.append('<li>Visted ' + d.name + ' in ' + d.state + ' on ' + d.date + '</li>');
-			//var years = This.USModel.get
 		});
 		
+		$('#years').on('click', 'li', function(e){
+			var year = This.USModel.getYear(e.target.innerHTML);
+			This.svg.clearAll();
+			for(var y=0;y<year.length;y++){
+				This.svg.addState(year[y].name);
+			}
+		});
 	};
+	
+	Josh.AC.prototype = {
+		checkinDone: function(){
+			var all = this.USModel.getAll();
+			for(var i=0;i<all.length;i++){
+				this.svg.addState(all[i].name);
+			}
+			
+			var years = this.USModel.getAllYears();
+			
+			var li = "";
+			for(var y=0;y<years.length;y++){
+				li += "<li>" + years[y] + "</li>";
+			}
+			$years.append(li);
+		}
+	}
 })(window.Josh = window.Josh || {}, window.jQuery);
 
 (function(Josh){
 	var $svg;
 	
 	Josh.SVG = function(){
+		//probably don't need
+		//I will have to test
 		$svg = $('svg');
 	};
 	
@@ -163,6 +183,9 @@
 	};
 	
 	Josh.FB.prototype = {
+		//this needs to be refactored
+		//if you are not already in it won't work 
+		//until you hit the button again
 		getCheckins: function(){
 			FB.getLoginStatus(function(response){
 			    if(response.status === 'connected'){
@@ -184,7 +207,6 @@
 					});
 			    }else{
 			    	FB.login(function(response){
-						console.log(response);
 			    	}, {scope: 'email,user_checkins,user_status'});
 			    }
 			});
