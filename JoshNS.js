@@ -58,6 +58,23 @@
 			if(years[year] !== undefined){
 				return this.sortedStates(years[year]);
 			}
+		},
+		
+		getCheckins: function(year){
+			if(!year){
+				return checkins.length;
+			}else{
+				var yearReturn = [];
+				for(var i=0;i<checkins.length;i++){
+					if(checkins[i].year === year){
+						yearReturn.push(checkins[i]);
+					}
+				}
+				
+				return yearReturn.length;
+			}
+			//return checkins.length;
+			//return checkins;
 		}
 	};
 	
