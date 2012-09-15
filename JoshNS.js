@@ -212,7 +212,7 @@
 		
 		//init Facebook SDK
 		FB.init({
-			appId  : '389943044385763',
+			appId  : '206649819466252',
 			status : true, // check login status
 			cookie : true, // enable cookies to allow the server to access the session
 			oauth  : true, // enable OAuth 2.0
