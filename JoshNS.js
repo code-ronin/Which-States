@@ -281,7 +281,7 @@
 			$('#fs_connect').on('click', function(){
 				if(!checked){
 					$this.trigger('checkinStart');
-					window.open('https://foursquare.com/oauth2/authenticate?client_id=TZGGYQQPLXGWT2DZA5UQU3XRDZPZVSRAMOB5E3P0IN31YRV0&response_type=token&redirect_uri=http://localhost:85/usmap/fstoken.html', "", "width=400,height=50");
+					window.open('https://foursquare.com/oauth2/authenticate?client_id=TZGGYQQPLXGWT2DZA5UQU3XRDZPZVSRAMOB5E3P0IN31YRV0&response_type=token&redirect_uri=http://ejosh.co/demos/usmap/fstoken.html', "", "width=500,height=500");
 				};
 			});
 			
