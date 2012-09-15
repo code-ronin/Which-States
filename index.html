@@ -6,25 +6,26 @@
 	html,body {background: url(img/retro_intro.png) repeat;}
 	/*.white-state {fill: #535353;stroke:#ffffff;}*/
 	.white-state {fill: hsl(0, 0%, 33%); stroke:#ffffff;}
+	.white-state:hover {cursor: hand; cursor: pointer;}
 	svg {fill: #d3d3d3;fill-opacity:1;stroke:#ffffff;stroke-opacity:1;stroke-width:0.75;stroke-miterlimit:4;stroke-dasharray:none;}
 	#info { height:100px; overflow:auto; background: #292724; color: #fff;}
 	.container {background: #fff; padding: 30px; box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.5);}
-	.img-load:hover {cursor: hand}
+	.img-load:hover {cursor: hand; cursor: pointer;}
+	#alert {position: fixed; top: 0; }
+	.none {display: none;}
+	#years {list-style: none;}
+	#years li:hover {cursor: hand; cursor: pointer; background: #292724; color: #fff;}
 </style>
 <link href="css/bootstrap.min.css" rel="stylesheet">
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
 <script src="http://connect.facebook.net/en_US/all.js"></script>
-<script type="text/javascript"> if (!window.console) console = {log: function() {}}; </script> 
 </head>
 <body>
 <div class="container">
+<div id="alert" class="alert alert-success span4 offset4 none">
+</div>
 <h2>Which states have I been to?</h2>
 <div class="row">
-	<div class="span4">
-	<ul id="years"></ul>
-	<img src="img/fb_connect.gif" alt="Connect to Facebook" id="fb_connect" class="img-load">
-	<img src="img/connect-blue.png" alt="Connect to FourSquare" id="fs_connect" class="img-load">
-	</div>
 	
 	<div class="span12" style="height:600px;">
 
@@ -321,7 +322,17 @@
      sodipodi:nodetypes="ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccscc" />
 </svg>
 
-</div>
+	</div>
+
+	<div class="span4">
+		<img src="img/fb_connect.gif" alt="Connect to Facebook" id="fb_connect" class="img-load">
+		<img src="img/connect-blue.png" alt="Connect to FourSquare" id="fs_connect" class="img-load">
+	</div>
+	<div class="span4">
+		<ul id="years"></ul>
+	</div>
+	<div id="stats" class="span4">
+	</div>
 </div>
 
 <div class="row">
@@ -331,16 +342,9 @@
 </div>
 </div>
 <div id="fb-root"></div>
+<script src="base64.js"></script>
 <script src="JoshNS.js"></script>
 <script>
-var test = document.getElementById('IN');
-var id = document.getElementById('ID');
-//$('#MI').attr('class', 'white-state');
-//test.setAttribute('class', 'white-state');
-//id.setAttribute('class', 'white-state');
-//test.setAttribute('opacity', '.5');
-console.log(test);
-
 $('#save').on('click', function(e){
 	window.open('test.html', "", "");
 });

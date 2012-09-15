@@ -3,13 +3,10 @@
 	var states = {};
 	var checkins = [];
 	var years = {};
-	//var fb = false;
-	var fs = false;
 	var $this;
 	
 	Josh.US = function(){
 		$this = $(this);
-		this.fb = false;
 	};
 	
 	Josh.US.prototype = {
@@ -28,7 +25,7 @@
 						years[place.year][place.state].checkins++;
 					}
 				}
-			$this.trigger('checkin', place);
+			$this.trigger('checkin', [place, checkins.length]);
 		},
 		
 		sortedStates: function(states){
@@ -61,10 +58,6 @@
 			if(years[year] !== undefined){
 				return this.sortedStates(years[year]);
 			}
-		},
-		
-		setFB: function(){
-			this.fb = true;
 		}
 	};
 	
@@ -76,6 +69,7 @@
 	var This;
 	var $infoUL;
 	var $years;
+	var $alert;
 	
 	Josh.AC = function(){
 		//public properties
@@ -88,6 +82,7 @@
 		This = this;
 		$infoUL = $('#info');
 		$years = $('#years');
+		$alert = $('#alert');
 		
 		
 		//events to listen for
@@ -95,53 +90,82 @@
 			This.checkinDone();
 		});
 		
+		$(this.fb).on('checkinStart', function(){
+			This.addAlert('Getting states from Facebook...');
+		});
+		
 		$(this.fs).on('checkinDone', function(){
 			This.checkinDone();
 		});
 		
-		$(this.USModel).on('checkin', function(e,d){
-			$infoUL.append('<li>Visted ' + d.name + ' in ' + d.state + ' on ' + d.date + '</li>');
+		$(this.fs).on('checkinStart', function(){
+			This.addAlert('Getting states from Foursquare...');
+		});
+		
+		$(this.USModel).on('checkin', function(e, d, count){
+			$infoUL.append('<li>' + d.name + ' ' + d.state + ' on ' + d.date + '</li>');
+			if(count % 4 === 0){
+				This.addAlert('Processing ' + d.state);
+			}
 		});
 		
 		$('#years').on('click', 'li', function(e){
-			var year = This.USModel.getYear(e.target.innerHTML);
+			if(e.target.innerHTML === 'All'){
+				var year = This.USModel.getAll();	
+			}else{
+				var year = This.USModel.getYear(e.target.innerHTML);
+			}
 			This.svg.clearAll();
 			for(var y=0;y<year.length;y++){
-				This.svg.addState(year[y].name);
+				This.svg.addState(year[y].name, year[y].checkins);
 			}
 		});
 	};
 	
 	Josh.AC.prototype = {
+		addAlert: function(alert){
+			$alert.html(alert).removeClass('none');
+		},
+		
+		removeAlert: function(){
+			$alert.addClass('none');	
+		},
+		
 		checkinDone: function(){
 			var all = this.USModel.getAll();
 			for(var i=0;i<all.length;i++){
-				this.svg.addState(all[i].name);
+				this.svg.addState(all[i].name, all[i].checkins);
 			}
 			
 			var years = this.USModel.getAllYears();
 			
-			var li = "";
+			var li = "<li>All</li>";
 			for(var y=0;y<years.length;y++){
 				li += "<li>" + years[y] + "</li>";
 			}
-			$years.append(li);
+			$years.html(li);
+			
+			this.removeAlert();
 		}
 	}
 })(window.Josh = window.Josh || {}, window.jQuery);
 
 (function(Josh){
 	var $svg;
+	var This = this;
 	
 	Josh.SVG = function(){
-		//probably don't need
-		//I will have to test
 		$svg = $('svg');
+		
+		$svg.on('click', '.white-state', function(e){
+			console.log($(e.target).attr('checkins'));
+		});
 	};
 	
 	Josh.SVG.prototype = {
-		addState: function(state){
-			$('#' + state).attr('class', 'white-state');
+		addState: function(state, checkins){
+			$svg.children('#' + state).attr('class', 'white-state');
+			$svg.children('#' + state).attr('checkins', checkins);
 		},
 		
 		clearAll: function(){
@@ -161,6 +185,7 @@
 	var usModel;
 	var $this;
 	var This;
+	var checked = false;
 	
 	Josh.FB = function(US){
 		//dependency injection
@@ -178,7 +203,9 @@
 		});
 		
 		$('#fb_connect').on('click', function(){
-			This.getCheckins();
+			if(!checked){
+				This.getCheckins();
+			};
 		});
 	};
 	
@@ -187,10 +214,10 @@
 		//if you are not already in it won't work 
 		//until you hit the button again
 		getCheckins: function(){
+			$this.trigger('checkinStart');
 			FB.getLoginStatus(function(response){
 			    if(response.status === 'connected'){
 			    	FB.api('me/checkins?limit=750', function(c){
-			    		usModel.setFB();
 						for(var i in c.data){
 							var date = new Date(c.data[i].created_time);
 							usModel.addCheckin(new Josh.Place( 
@@ -203,6 +230,7 @@
 								'fb'
 							));
 						}
+						checked = true;
 						$this.trigger('checkinDone');
 					});
 			    }else{
@@ -216,12 +244,15 @@
 
 (function(Josh){
 	var oauth;
+	var $this;
 	var This;
 	var usModel;
+	var checked = false;
 	
 	Josh.FS = function(US){
 		usModel = US;
 		
+		$this = $(this);
 		This = this;
 		
 		this.wireEvents();
@@ -231,7 +262,10 @@
 		wireEvents: function(){
 			//foursquare image
 			$('#fs_connect').on('click', function(){
-				window.open('https://foursquare.com/oauth2/authenticate?client_id=TZGGYQQPLXGWT2DZA5UQU3XRDZPZVSRAMOB5E3P0IN31YRV0&response_type=token&redirect_uri=http://localhost:85/usmap/fstoken.html', "", "width=400,height=50");
+				if(!checked){
+					$this.trigger('checkinStart');
+					window.open('https://foursquare.com/oauth2/authenticate?client_id=TZGGYQQPLXGWT2DZA5UQU3XRDZPZVSRAMOB5E3P0IN31YRV0&response_type=token&redirect_uri=http://localhost:85/usmap/fstoken.html', "", "width=400,height=50");
+				};
 			});
 			
 			//return from Oauth call
@@ -270,7 +304,8 @@
 				if(count > offset + 250){
 					This.getFourSquare(offset + 250, count);
 				}else{
-					$(This).trigger('checkinDone');
+					checked = true;
+					$this.trigger('checkinDone');
 				}
 			});
 		}
