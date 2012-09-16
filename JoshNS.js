@@ -80,9 +80,8 @@
 	
 })(window.Josh = window.Josh || {}, window.jQuery);
 
-(function(Josh){})(window.Josh = window.Josh || {}, window.jQuery);
-
 (function(Josh){
+	"use strict";
 	var This;
 	var $infoUL;
 	var $years;
@@ -168,6 +167,7 @@
 })(window.Josh = window.Josh || {}, window.jQuery);
 
 (function(Josh){
+	"use strict";
 	var $svg;
 	var This = this;
 	
@@ -192,6 +192,7 @@
 })(window.Josh = window.Josh || {}, window.jQuery);
 
 (function(Josh){
+	"use strict";
 	Josh.State = function(name){
 		this.name = name;
 		this.checkins = 1;
@@ -199,9 +200,11 @@
 })(window.Josh = window.Josh || {});
 
 (function(Josh){
+	"use strict";
 	var usModel;
 	var $this;
 	var This;
+	var apiCall;
 	var checked = false;
 	
 	Josh.FB = function(US){
@@ -226,6 +229,26 @@
 		});
 	};
 	
+	//keep this method private
+	apiCall = function(){
+		FB.api('me/checkins?limit=750', function(c){
+			for(var i in c.data){
+				var date = new Date(c.data[i].created_time);
+				usModel.addCheckin(new Josh.Place( 
+					c.data[i].place.location.latitude,
+					c.data[i].place.location.longitude,
+					c.data[i].place.location.state,
+					c.data[i].place.name,
+					date,
+					date.getFullYear(),
+					'fb'
+				));
+			}
+			checked = true;
+			$this.trigger('checkinDone');
+		});
+	};
+	
 	Josh.FB.prototype = {
 		//this needs to be refactored
 		//if you are not already in it won't work 
@@ -234,24 +257,12 @@
 			$this.trigger('checkinStart');
 			FB.getLoginStatus(function(response){
 			    if(response.status === 'connected'){
-			    	FB.api('me/checkins?limit=750', function(c){
-						for(var i in c.data){
-							var date = new Date(c.data[i].created_time);
-							usModel.addCheckin(new Josh.Place( 
-								c.data[i].place.location.latitude,
-								c.data[i].place.location.longitude,
-								c.data[i].place.location.state,
-								c.data[i].place.name,
-								date,
-								date.getFullYear(),
-								'fb'
-							));
-						}
-						checked = true;
-						$this.trigger('checkinDone');
-					});
+			    	apiCall();
 			    }else{
 			    	FB.login(function(response){
+			    		if(response.status === 'connected'){
+			    			apiCall();
+			    		}
 			    	}, {scope: 'email,user_checkins,user_status'});
 			    }
 			});
@@ -260,6 +271,7 @@
 })(window.Josh = window.Josh || {}, window.jQuery);
 
 (function(Josh){
+	"use strict";
 	var oauth;
 	var $this;
 	var This;
@@ -330,6 +342,7 @@
 })(window.Josh = window.Josh || {}, window.jQuery);
 
 (function(Josh){
+	"use strict";
 	var abbr = {
 		ALASKA: 		'AK',
 		ALABAMA: 		'AL',
