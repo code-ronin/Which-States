@@ -1,3 +1,7 @@
+//for jsLint these are defined in other files
+
+/*global FB:true */
+
 (function(Josh, $){
 	"use strict";
 	var states = {};
@@ -37,7 +41,7 @@
 				}
 			}
 			
-			stateArray.sort(function(a, b){return b.checkins - a.checkins});
+			stateArray.sort(function(a, b){return b.checkins - a.checkins;});
 			return stateArray;
 		},
 		
@@ -126,10 +130,11 @@
 		});
 		
 		$('#years').on('click', 'li', function(e){
+			var year;
 			if(e.target.innerHTML === 'All'){
-				var year = This.USModel.getAll();	
+				year = This.USModel.getAll();	
 			}else{
-				var year = This.USModel.getYear(e.target.innerHTML);
+				year = This.USModel.getYear(e.target.innerHTML);
 			}
 			This.svg.clearAll();
 			for(var y=0;y<year.length;y++){
@@ -163,25 +168,25 @@
 			
 			this.removeAlert();
 		}
-	}
+	};
 })(window.Josh = window.Josh || {}, window.jQuery);
 
 (function(Josh){
 	"use strict";
 	var $svg;
-	var This = this;
 	
 	Josh.SVG = function(){
 		$svg = $('svg');
 		
-		$svg.on('click', '.white-state', function(e){
-			console.log($(e.target).attr('checkins'));
-		});
+		//$svg.on('click', '.white-state', function(e){
+			//maybe I will add something here?!?
+		//});
 	};
 	
 	Josh.SVG.prototype = {
-		addState: function(state, checkins){
+		addState: function(state, checkins){ 
 			$svg.children('#' + state).attr('class', 'white-state');
+			//this will tie into the click event
 			$svg.children('#' + state).attr('checkins', checkins);
 		},
 		
@@ -225,7 +230,7 @@
 		$('#fb_connect').on('click', function(){
 			if(!checked){
 				This.getCheckins();
-			};
+			}
 		});
 	};
 	
@@ -256,15 +261,15 @@
 		getCheckins: function(){
 			$this.trigger('checkinStart');
 			FB.getLoginStatus(function(response){
-			    if(response.status === 'connected'){
-			    	apiCall();
-			    }else{
-			    	FB.login(function(response){
-			    		if(response.status === 'connected'){
-			    			apiCall();
-			    		}
-			    	}, {scope: 'email,user_checkins,user_status'});
-			    }
+				if(response.status === 'connected'){
+					apiCall();
+				}else{
+					FB.login(function(response){
+						if(response.status === 'connected'){
+							apiCall();
+						}
+					}, {scope: 'email,user_checkins,user_status'});
+				}
 			});
 		}
 	};
@@ -294,7 +299,7 @@
 				if(!checked){
 					$this.trigger('checkinStart');
 					window.open('https://foursquare.com/oauth2/authenticate?client_id=TZGGYQQPLXGWT2DZA5UQU3XRDZPZVSRAMOB5E3P0IN31YRV0&response_type=token&redirect_uri=http://ejosh.co/demos/usmap/fstoken.html', "", "width=500,height=500");
-				};
+				}
 			});
 			
 			//return from Oauth call
@@ -344,11 +349,11 @@
 (function(Josh){
 	"use strict";
 	var abbr = {
-		ALASKA: 		'AK',
-		ALABAMA: 		'AL',
-		ARKANSAS: 		'AR',
-		ARIZONA: 		'AZ',
-		CALIFORNIA: 	'CA',
+		ALASKA:			'AK',
+		ALABAMA:		'AL',
+		ARKANSAS:		'AR',
+		ARIZONA:		'AZ',
+		CALIFORNIA:		'CA',
 		COLORADO:		'CO',
 		CONNECTICUT:	'CT',
 		DELAWARE:		'DE',
@@ -358,7 +363,7 @@
 		IOWA:			'IA',
 		IDAHO:			'ID',
 		ILLINOIS:		'IL',
-		INDIANA: 		'IN',
+		INDIANA:		'IN',
 		KANSAS:			'KS',
 		KENTUCKY:		'KY',
 		LOUISIANA:		'LA',
@@ -366,7 +371,7 @@
 		MARYLAND:		'MD',
 		MAINE:			'ME',
 		MINNESOTA:		'MN',
-		MISSOURI: 		'MO',
+		MISSOURI:		'MO',
 		MISSISSIPPI:	'MS',
 		MONTANA:		'MT',
 		'NORTH CAROLINA':'NC',
@@ -378,14 +383,14 @@
 		NEVADA:			'NV',
 		'NEW YORK':		'NY',
 		OHIO:			'OH',
-		OKLAHOMA: 		'OK',
+		OKLAHOMA:		'OK',
 		OREGON:			'OR',
 		PENNSYLVANIA:	'PA',
 		'RHODE ISLAND':	'RI',
 		'SOUTH CAROLINA':'SC',
 		'SOUTH DAKOTA':	'SD',
 		TENNESSEE:		'TN',
-		TEXAS: 			'TX',
+		TEXAS:			'TX',
 		UTAH:			'UT',
 		VIRGINIA:		'VA',
 		VERMONT:		'VT',
